@@ -5,6 +5,22 @@ class Formatter
   SECOND = 1
   THIRD = 2
 
+  def format(line)
+    cols = split_by_tab(line)
+    content = extract_content(cols)
+    level = indent_level(cols)
+    case level
+    when TOP
+      return format_as_top_level(content)
+    when SECOND
+      return format_as_second_level(content)
+    when THIRD
+      return format_as_third_level(content)
+    else
+      return format_as_lower_level(content, level)
+    end
+  end
+
   protected
 
   def format_as_top_level(content)
@@ -31,28 +47,9 @@ class Formatter
   def indent_level(cols)
     cols.count{|c| c==""} 
   end
-
-
 end
 
 class ReSTFormatter < Formatter
-
-
-  def format(line)
-    cols = split_by_tab(line)
-    content = extract_content(cols)
-    level = indent_level(cols)
-    case level
-    when TOP
-      return format_as_top_level(content)
-    when SECOND
-      return format_as_second_level(content)
-    when THIRD
-      return format_as_third_level(content)
-    else
-      return format_as_lower_level(content, level)
-    end
-  end
 
   protected
 
@@ -86,28 +83,86 @@ class ReSTFormatter < Formatter
     text << content
     text << "\n"
   end
-
-
 end
 
 class RedmineFormatter < Formatter
+
+  protected
+
+  def format_as_top_level(content)
+    text = ''
+    text << "h1. "
+    text << content
+    text << "\n"
+  end
+
+  def format_as_second_level(content)
+    text = ''
+    text << "h2. "
+    text << content
+    text << "\n"
+  end
+
+  def format_as_third_level(content)
+    text = ''
+    text << "h3. "
+    text << content
+    text << "\n"
+  end
+
+  def format_as_lower_level(content, indent_level)
+    text = ''
+    text << " " * (indent_level - 3)
+    text << "* "
+    text << content
+    text << "\n"
+  end
 end
 
-def format_as_tabbed_text(line)
-  formatter = ReSTFormatter.new
-  formatter.format(line)
+class MindmapToTextFormatter
+
+  def initialize(file, type)
+    @file = file
+    @type = type
+    @formatters = init_formatters
+    @formatter = nil
+  end
+
+  def init_formatters
+    formatters = {}
+    formatters[:rest] = ReSTFormatter.new
+    formatters[:redmine] = RedmineFormatter.new
+    formatters
+  end
+
+  def run
+    @formatter = @formatters[@type]
+    if @formatter.nil?
+      puts "Error: select valid formatter #{@formatters.keys.join(',')}"
+      exit(1)
+    end
+
+    open(@file, 'r').each do |f|
+      f.each_line do |line|
+        puts @formatter.format(line)
+      end
+    end
+  end
 end
 
 file = ARGV[0]
+type = ARGV[1]
+
 if file.nil?
-  puts "Usage: mm2txt.rb textfile"
+  puts "Usage: mm2txt.rb [rest|redmine] filename"
   exit(1)
 end
-
-open(file, 'r').each do |f|
-  f.each_line do |line|
-    puts format_as_tabbed_text(line)
- end
+if type.nil?
+  type = :rest
+else
+  type = type.to_sym
 end
 
+mm2txt = MindmapToTextFormatter.new(file, type)
+mm2txt.run
 
