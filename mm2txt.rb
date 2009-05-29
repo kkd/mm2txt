@@ -56,21 +56,21 @@ class ReSTFormatter < Formatter
   def format_as_top_level(content)
     text = ''
     text << "=" * (content.size * 1.5) << "\n"
-    text << content
+    text << content << "\n"
     text << "=" * (content.size * 1.5) << "\n"
     text << "\n\n"
   end
 
   def format_as_second_level(content)
     text = ''
-    text << content
+    text << content << "\n"
     text << "=" * (content.size * 1.5)
     text << "\n\n"
   end
 
   def format_as_third_level(content)
     text = ''
-    text << content
+    text << content << "\n"
     text << "-" * (content.size * 1.5)
     text << "\n\n"
   end
@@ -81,9 +81,45 @@ class ReSTFormatter < Formatter
     text << "  " * (indent_level - 2)
     text << "* "
     text << content
+    text << "\n\n"
+  end
+end
+
+class TracFormatter < Formatter
+
+  protected
+
+  def format_as_top_level(content)
+    text = ''
+    text << "="
+    text << content
+    text << "=\n"
+  end
+
+  def format_as_second_level(content)
+    text = ''
+    text << "=="
+    text << content
+    text << "==\n"
+  end
+
+  def format_as_third_level(content)
+    text = ''
+    text << "==="
+    text << content
+    text << "===\n"
+  end
+
+  def format_as_lower_level(content, indent_level)
+    text = ''
+    text << " " * (indent_level - 3)
+    text << "* "
+    text << content
     text << "\n"
   end
 end
+
+
 
 class RedmineFormatter < Formatter
 
@@ -132,6 +168,7 @@ class MindmapToTextFormatter
     formatters = {}
     formatters[:rest] = ReSTFormatter.new
     formatters[:redmine] = RedmineFormatter.new
+    formatters[:trac] = TracFormatter.new
     formatters
   end
 
@@ -144,7 +181,7 @@ class MindmapToTextFormatter
 
     open(@file, 'r').each do |f|
       f.each_line do |line|
-        puts @formatter.format(line)
+        puts @formatter.format(line.chomp)
       end
     end
   end
@@ -154,7 +191,7 @@ file = ARGV[0]
 type = ARGV[1]
 
 if file.nil?
-  puts "Usage: mm2txt.rb [rest|redmine] filename"
+  puts "Usage: mm2txt.rb filename [rest|redmine|trac]"
   exit(1)
 end
 if type.nil?
