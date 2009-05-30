@@ -32,30 +32,6 @@ class Formatter
     else
       make_list(level, content)
     end
-
-#     case level
-#     when TOP
-#       return format_as_top_level(content)
-#     when SECOND
-#       return format_as_second_level(content)
-#     when THIRD
-#       return format_as_third_level(content)
-#     else
-#       return format_as_lower_level(content, level)
-#     end
-  end
-
-  def format_as_top_level(content)
-    content
-  end
-  def format_as_second_level(content)
-    content
-  end
-  def format_as_third_level(content)
-    content
-  end
-  def format_as_lower_level(content)
-    content
   end
 
   def split_by_tab(line)
@@ -78,7 +54,7 @@ class ReSTFormatter < Formatter
   def make_heading(level, content)
     case level
     when 1
-      make_title(content)
+      decorate_title(content)
     when 2
       make_rst_heading('=', content)
     when 3 
@@ -91,19 +67,12 @@ class ReSTFormatter < Formatter
     " #{'  ' * (level - 3)}* #{content}\n\n"
   end
 
-  def make_title(content)
-    text = ''
-    text << "=" * (content.size * 1.5) << "\n"
-    text << content << "\n"
-    text << "=" * (content.size * 1.5) << "\n"
-    text << "\n\n"
+  def decorate_title(content)
+    "#{'=' * (content.size * 1.5)}\n#{content}#{'=' * (content.size * 1.5)}\n\n\n"
   end
 
   def make_rst_heading(char, content)
-    text = ''
-    text << content << "\n"
-    text << char * (content.size * 1.5)
-    text << "\n\n"
+    "#{content}\n#{char * (content.size * 1.5)}\n\n"
   end
 end
 
