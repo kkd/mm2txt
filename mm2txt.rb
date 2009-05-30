@@ -1,10 +1,6 @@
 #!/usr/bin/env ruby
 
 class Formatter
-  TOP = 0
-  SECOND = 1
-  THIRD = 2
-  
   def initialize(max_heading_level=3)
     @max_heading_level = max_heading_level
   end
