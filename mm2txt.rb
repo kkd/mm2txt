@@ -107,28 +107,23 @@ class MindmapToTextFormatter
   def initialize(file, type)
     @file = file
     @type = type
-    @formatters = init_formatters
-    @formatter = nil
-  end
-
-  def init_formatters
-    formatters = {}
-    formatters[:rest] = ReSTFormatter.new
-    formatters[:redmine] = RedmineFormatter.new
-    formatters[:trac] = TracFormatter.new
-    formatters
+    @formatters =  {
+      :rest => ReSTFormatter.new,
+      :redmine => RedmineFormatter.new,
+      :trac => TracFormatter.new
+    }
   end
 
   def run
-    @formatter = @formatters[@type]
-    if @formatter.nil?
+    formatter = @formatters[@type]
+    if formatter.nil?
       puts "Error: select valid formatter #{@formatters.keys.join(',')}"
       exit(1)
     end
 
     open(@file, 'r').each do |f|
       f.each_line do |line|
-        puts @formatter.format(line.chomp)
+        puts formatter.format(line.chomp)
       end
     end
   end
