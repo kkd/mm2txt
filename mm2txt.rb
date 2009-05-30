@@ -4,6 +4,10 @@ class Formatter
   TOP = 0
   SECOND = 1
   THIRD = 2
+  
+  def initialize(max_heading_level=3)
+    @max_heading_level = max_heading_level
+  end
 
   def format(line)
     cols = split_by_tab(line)
@@ -14,17 +18,31 @@ class Formatter
 
   protected
 
+  def make_heading(level, content)
+    content
+  end
+
+  def make_list(level, content)
+    content
+  end
+
   def format_line(level, content)
-    case level
-    when TOP
-      return format_as_top_level(content)
-    when SECOND
-      return format_as_second_level(content)
-    when THIRD
-      return format_as_third_level(content)
+    if level <= (@max_heading_level - 1)
+      make_heading(level + 1, content)
     else
-      return format_as_lower_level(content, level)
+      make_list(level, content)
     end
+
+#     case level
+#     when TOP
+#       return format_as_top_level(content)
+#     when SECOND
+#       return format_as_second_level(content)
+#     when THIRD
+#       return format_as_third_level(content)
+#     else
+#       return format_as_lower_level(content, level)
+#     end
   end
 
   def format_as_top_level(content)
@@ -57,7 +75,23 @@ class ReSTFormatter < Formatter
 
   protected
 
-  def format_as_top_level(content)
+  def make_heading(level, content)
+    case level
+    when 1
+      make_title(content)
+    when 2
+      make_rst_heading('=', content)
+    when 3 
+      make_rst_heading('-', content)
+    else
+    end
+  end
+
+  def make_list(level, content)
+    " #{'  ' * (level - 3)}* #{content}\n\n"
+  end
+
+  def make_title(content)
     text = ''
     text << "=" * (content.size * 1.5) << "\n"
     text << content << "\n"
@@ -65,26 +99,10 @@ class ReSTFormatter < Formatter
     text << "\n\n"
   end
 
-  def format_as_second_level(content)
+  def make_rst_heading(char, content)
     text = ''
     text << content << "\n"
-    text << "=" * (content.size * 1.5)
-    text << "\n\n"
-  end
-
-  def format_as_third_level(content)
-    text = ''
-    text << content << "\n"
-    text << "-" * (content.size * 1.5)
-    text << "\n\n"
-  end
-
-  def format_as_lower_level(content, indent_level)
-    text = ''
-    text << " "
-    text << "  " * (indent_level - 2)
-    text << "* "
-    text << content
+    text << char * (content.size * 1.5)
     text << "\n\n"
   end
 end
@@ -93,69 +111,25 @@ class TracFormatter < Formatter
 
   protected
 
-  def format_as_top_level(content)
-    text = ''
-    text << "="
-    text << content
-    text << "=\n"
+  def make_heading(level, content)
+    "#{'=' * level}#{content}#{'=' * level}"
   end
 
-  def format_as_second_level(content)
-    text = ''
-    text << "=="
-    text << content
-    text << "==\n"
-  end
-
-  def format_as_third_level(content)
-    text = ''
-    text << "==="
-    text << content
-    text << "===\n"
-  end
-
-  def format_as_lower_level(content, indent_level)
-    text = ''
-    text << " " * (indent_level - 3)
-    text << "* "
-    text << content
-    text << "\n"
+  def make_list(level, content)
+    "#{' ' * (level - 3)}* #{content}\n"
   end
 end
-
-
 
 class RedmineFormatter < Formatter
 
   protected
 
-  def format_as_top_level(content)
-    text = ''
-    text << "h1. "
-    text << content
-    text << "\n"
+  def make_heading(level, content)
+    "h#{level}. #{content}\n"
   end
 
-  def format_as_second_level(content)
-    text = ''
-    text << "h2. "
-    text << content
-    text << "\n"
-  end
-
-  def format_as_third_level(content)
-    text = ''
-    text << "h3. "
-    text << content
-    text << "\n"
-  end
-
-  def format_as_lower_level(content, indent_level)
-    text = ''
-    text << " " * (indent_level - 3)
-    text << "* "
-    text << content
-    text << "\n"
+  def make_list(level, content)
+    "#{' ' * (level - 3)}* #{content}\n"
   end
 end
 
