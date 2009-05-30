@@ -9,6 +9,12 @@ class Formatter
     cols = split_by_tab(line)
     content = extract_content(cols)
     level = indent_level(cols)
+    format_line(level, content)
+  end
+
+  protected
+
+  def format_line(level, content)
     case level
     when TOP
       return format_as_top_level(content)
@@ -20,8 +26,6 @@ class Formatter
       return format_as_lower_level(content, level)
     end
   end
-
-  protected
 
   def format_as_top_level(content)
     content
